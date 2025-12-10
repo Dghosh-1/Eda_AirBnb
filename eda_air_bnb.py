@@ -1,122 +1,80 @@
-#!/usr/bin/env python
-# coding: utf-8
+import streamlit as st
+from eda_air_bnb import (
+    load_data,
+    price_distribution,
+    room_type_distribution,
+    listings_by_neighbourhood,
+    price_vs_room_type,
+    reviews_over_time,
+    correlation_heatmap,
+    geographical_dotted_plot
+)
 
-# In[1]:
+st.set_page_config(
+    page_title="Airbnb EDA Dashboard",
+    layout="wide",
+)
 
+st.markdown(
+    """
+    <h1 style='text-align:center; color:#E74C3C;'>Airbnb Data Analysis Dashboard</h1>
+    <p style='text-align:center; font-size:18px;'>
+    Explore insights about Airbnb listings including pricing, room types, neighbourhood trends, and customer reviews.
+    </p>
+    <hr>
+    """,
+    unsafe_allow_html=True,
+)
 
-import pandas as pd
-import matplotlib.pyplot as plt
-import seaborn as sns
+st.sidebar.header("Navigation Panel")
+menu = [
+    "Distribution of Listing Prices",
+    "Room Type Distribution",
+    "Listings by Neighbourhood",
+    "Price vs Room Type",
+    "Number of Reviews Over Time",
+    "Correlation Heatmap",
+    "Geographical Distribution Plot"
+]
+choice = st.sidebar.radio("Select Analysis", menu)
 
+st.sidebar.subheader("Data Source")
+st.sidebar.info("Using the local dataset: 'compressed_data.csv'")
+df = load_data("compressed_data.csv")
 
-# # Load and clean data
+if choice == "Distribution of Listing Prices":
+    st.subheader("Distribution of Listing Prices")
+    st.pyplot(price_distribution(df))
 
-# In[5]:
-def load_data(path="compressed_data.csv"):
-    df = pd.read_csv(path, low_memory=False)
-    df['last review'] = pd.to_datetime(df['last review'], errors='coerce')
-    df.fillna({'reviews per month': 0, 'last review': df['last review'].min()}, inplace=True)
-    df.drop(columns=["lisence", "house_rules"], errors='ignore', inplace=True)
-    df['price'] = df['price'].replace(r'[\$,]', '', regex=True).astype(float)
-    df.drop_duplicates(inplace=True)
-    return df
+elif choice == "Room Type Distribution":
+    st.subheader("Room Type Distribution")
+    st.pyplot(room_type_distribution(df))
 
-# #  Distribution of Listing Prices
-# 
+elif choice == "Listings by Neighbourhood":
+    st.subheader("Listings by Neighbourhood Group")
+    st.pyplot(listings_by_neighbourhood(df))
 
-# In[14]:
+elif choice == "Price vs Room Type":
+    st.subheader("Price vs Room Type")
+    st.pyplot(price_vs_room_type(df))
 
+elif choice == "Number of Reviews Over Time":
+    st.subheader("Number of Reviews Over Time")
+    st.pyplot(reviews_over_time(df))
 
-def price_distribution(df):
-    fig, ax = plt.subplots(figsize=(10, 6))
-    sns.histplot(df['price'], bins=40, kde=True, color='#E74C3C',
-                 edgecolor='black', alpha=0.8, ax=ax)
-    ax.set_title("Distribution of Listing Prices", fontsize=16, fontweight="bold")
-    ax.set_xlabel("Price ($)")
-    ax.set_ylabel("Frequency")
-    return fig
+elif choice == "Correlation Heatmap":
+    st.subheader("Feature Correlation Heatmap")
+    st.pyplot(correlation_heatmap(df))
 
+elif choice == "Geographical Distribution Plot":
+    st.subheader("Geographical Distribution of Airbnb Listings by Room Type")
+    st.pyplot(geographical_dotted_plot(df))
 
-# #  Room Type Distribution
-
-# In[7]:
-
-
-def room_type_distribution(df):
-    fig, ax = plt.subplots(figsize=(8, 5))
-    sns.countplot(x='room type', data=df, color='skyblue', ax=ax)
-    ax.set_title("Room Type Distribution", fontsize=16, fontweight="bold")
-    ax.set_xlabel("Room Type")
-    ax.set_ylabel("Count")
-    return fig
-
-
-# #  Listings Across Neighbourhoods
-
-# In[8]:
-
-
-def listings_by_neighbourhood(df):
-    fig, ax = plt.subplots(figsize=(12, 6))
-    sns.countplot(x='neighbourhood group', data=df,
-                  order=df['neighbourhood group'].value_counts().index,
-                  color='lightgreen', ax=ax)
-    ax.set_title("Listings by Neighbourhood Group", fontsize=16, fontweight="bold")
-    ax.set_xlabel("Neighbourhood Group")
-    ax.set_ylabel("Count")
-    plt.xticks(rotation=45)
-    return fig
-
-
-# #  Relation Between Price and Room Type
-
-# In[9]:
-
-
-def price_vs_room_type(df):
-    fig, ax = plt.subplots(figsize=(10, 6))
-    sns.boxplot(x='room type', y='price', data=df, palette='Set2', ax=ax)
-    ax.set_title("Price vs Room Type", fontsize=16, fontweight="bold")
-    ax.set_xlabel("Room Type")
-    ax.set_ylabel("Price ($)")
-    return fig
-
-
-# #  Number of Reviews Over Time
-
-# In[10]:
-
-
-def reviews_over_time(df):
-    df['last review'] = pd.to_datetime(df['last review'])
-    reviews = df.groupby(df['last review'].dt.to_period('M')).size()
-    fig, ax = plt.subplots(figsize=(12, 6))
-    reviews.plot(kind='line', color='red', ax=ax)
-    ax.set_title("Number of Reviews Over Time", fontsize=16, fontweight="bold")
-    ax.set_xlabel("Date")
-    ax.set_ylabel("Number of Reviews")
-    return fig
-
-
-# # Correlation Heatmap
-
-# In[13]:
-
-
-def correlation_heatmap(df):
-    corr = df.corr(numeric_only=True)
-    fig, ax = plt.subplots(figsize=(14, 10))
-    sns.heatmap(corr, annot=True, fmt=".2f", cmap='crest', linewidths=0.4, square=True, ax=ax)
-    ax.set_title("Feature Correlation Heatmap", fontsize=18, fontweight='bold', pad=15)
-    plt.xticks(rotation=45, ha='right', fontsize=10)
-    plt.yticks(rotation=0, fontsize=10)
-    plt.tight_layout()
-    return fig
-
-
-
-# In[ ]:
-
+st.markdown("<hr>", unsafe_allow_html=True)
+st.markdown(
+    "<p style='text-align:center; font-size:14px;'>Developed using Streamlit and Seaborn</p>",
+    unsafe_allow_html=True,
+)
 
 
 
