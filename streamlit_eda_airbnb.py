@@ -1,11 +1,5 @@
-#!/usr/bin/env python
-# coding: utf-8
 
-# In[ ]:
-
-
-# app.py
-import streamlit as st
+  import streamlit as st
 from eda_air_bnb import (
     load_data,
     price_distribution,
@@ -13,16 +7,15 @@ from eda_air_bnb import (
     listings_by_neighbourhood,
     price_vs_room_type,
     reviews_over_time,
-    correlation_heatmap
+    correlation_heatmap,
+    geographical_dotted_plot
 )
 
-# --- Page Configuration ---
 st.set_page_config(
     page_title="Airbnb EDA Dashboard",
     layout="wide",
 )
 
-# --- Title and Description ---
 st.markdown(
     """
     <h1 style='text-align:center; color:#E74C3C;'>Airbnb Data Analysis Dashboard</h1>
@@ -34,7 +27,6 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-# --- Sidebar ---
 st.sidebar.header("Navigation Panel")
 menu = [
     "Distribution of Listing Prices",
@@ -42,16 +34,15 @@ menu = [
     "Listings by Neighbourhood",
     "Price vs Room Type",
     "Number of Reviews Over Time",
-    "Correlation Heatmap"
+    "Correlation Heatmap",
+    "Geographical Distribution Plot"
 ]
 choice = st.sidebar.radio("Select Analysis", menu)
 
-# --- Load CSV Manually (No Upload) ---
 st.sidebar.subheader("Data Source")
 st.sidebar.info("Using the local dataset: 'compressed_data.csv'")
-df = load_data("compressed_data.csv")  # 👈 Always loads from your local file
+df = load_data("compressed_data.csv")
 
-# --- Visualization Display ---
 if choice == "Distribution of Listing Prices":
     st.subheader("Distribution of Listing Prices")
     st.pyplot(price_distribution(df))
@@ -76,10 +67,12 @@ elif choice == "Correlation Heatmap":
     st.subheader("Feature Correlation Heatmap")
     st.pyplot(correlation_heatmap(df))
 
-# --- Footer ---
+elif choice == "Geographical Distribution Plot":
+    st.subheader("Geographical Distribution of Airbnb Listings by Room Type")
+    st.pyplot(geographical_dotted_plot(df))
+
 st.markdown("<hr>", unsafe_allow_html=True)
 st.markdown(
     "<p style='text-align:center; font-size:14px;'>Developed using Streamlit and Seaborn</p>",
     unsafe_allow_html=True,
 )
-
