@@ -1,5 +1,5 @@
 
-  import streamlit as st
+import streamlit as st
 from eda_air_bnb import (
     load_data,
     price_distribution,
